@@ -1,8 +1,5 @@
 package cracking
 
-import scala.collection.mutable
-import scala.collection.mutable.MutableList
-
 object Btree {
   def from(valuesToAdd: List[Int]): Btree = {
     val btree = new Btree()
@@ -12,19 +9,7 @@ object Btree {
 }
 
 class Btree() {
-  var rootNode: Node = null
-
-  def printByLine(godMod: Boolean): String = {
-    rootNode.printByLine(godMod)
-  }
-
-  def printBySpaces(godMod: Boolean): String = {
-    rootNode.printBySpaces(godMod)
-  }
-
-  def printByConcat(godMod: Boolean): String = {
-    rootNode.printByConcat(godMod)
-  }
+  var rootNode: Node = _
 
   def printByOrder(godMod: Boolean): String = {
     rootNode.printByOrder(godMod)
@@ -32,7 +17,7 @@ class Btree() {
 
   def insert(valuesToAdd: List[Int]): Btree = {
     valuesToAdd.foreach(v => insert(v))
-    return this
+    this
   }
 
   def insert(valueToAdd: Int): Btree = {
@@ -41,12 +26,12 @@ class Btree() {
     } else {
       rootNode.insert(valueToAdd)
     }
-    return this
+    this
   }
 
   def computeOrderNumber(): Unit = {
     if(rootNode != null){
-      var minValue = rootNode.getNodePreviousAncestor()
+      var minValue = rootNode.retrieveNodePreviousAncestor()
       minValue.setOrderPositionAndSoOn(0)
     }
   }
@@ -58,33 +43,9 @@ class Btree() {
   }
 
   def has(valueToFind: Int): Boolean = {
-    return rootNode.isPresent(valueToFind)
+    rootNode.isPresent(valueToFind)
   }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
-
-
-case class Spaces(var l:Int, var r:Int)
-

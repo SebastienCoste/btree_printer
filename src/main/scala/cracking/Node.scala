@@ -4,22 +4,12 @@ import scala.collection.mutable
 
 class Node(val value: Int) {
 
-  var leftMarginBalanced = 0
 
-  var leftOffset, rightOffset = 0
-  var leftMargin = -1
-  var orderPosition = 0;
+  var leftOffset, rightOffset, leftMargin, orderPosition, leftMarginBalanced : Int = 0
 
-  var isLeft = false
+  var isLeft : Boolean = false
 
-  var nodeLeft: Option[Node] = None
-  var nodeRight: Option[Node] = None
-  var nodeUp: Option[Node] = None
-  var nodePrevious: Option[Node] = None
-  var nodeNext: Option[Node] = None
-
-
-  var spaces:Spaces = Spaces(0,0)
+  var nodeLeft, nodeRight, nodeUp, nodePrevious, nodeNext: Option[Node] = None
 
   def balanceSpaces() : Unit = {
     if (nodeLeft.isDefined){
@@ -64,25 +54,25 @@ class Node(val value: Int) {
 
     if(nodeLeft.isDefined && nodeRight.isDefined){
       this.leftMarginBalanced = nodeLeft.get.leftMarginBalanced + math.max(this.leftMargin - nodeLeft.get.leftMargin, nodeRight.get.leftMargin - this.leftMargin)
-    }else if(nodeLeft isDefined){
+    }else if(nodeLeft.isDefined){
       this.leftMarginBalanced = nodeLeft.get.leftMarginBalanced + (leftMargin - nodeLeft.get.leftMargin)
-    }else if(nodeRight isDefined){
+    }else if(nodeRight.isDefined){
       this.leftMarginBalanced = nodeRight.get.leftMarginBalanced + (leftMargin - nodeRight.get.leftMargin)
     }else{
       this.leftMarginBalanced = leftMargin
     }
   }
 
-  def getNodePreviousAncestor():Node = {
+  def retrieveNodePreviousAncestor():Node = {
     if (nodePrevious.isDefined){
-      return nodePrevious.get.getNodePreviousAncestor()
+      return nodePrevious.get.retrieveNodePreviousAncestor()
     }
-    return this
+    this
   }
 
   def setOrderPositionAndSoOn(currentPosition: Int) : Unit = {
     this.orderPosition = currentPosition
-    if(nodeNext isDefined){
+    if(nodeNext.isDefined){
       nodeNext.get.setOrderPositionAndSoOn(currentPosition+2)
     }
   }
@@ -105,11 +95,11 @@ class Node(val value: Int) {
     }
   }
 
-  private def createNodeRight(valueToAdd: Int) = {
+  private def createNodeRight(valueToAdd: Int) : Unit= {
     nodeRight = Some(new Node(valueToAdd))
-    nodeRight.get.nodeUp = Some(this);
-    nodeRight.get.nodePrevious = Some(this);
-    if (this.nodeNext isDefined) {
+    nodeRight.get.nodeUp = Some(this)
+    nodeRight.get.nodePrevious = Some(this)
+    if (this.nodeNext.isDefined) {
       nodeRight.get.nodeNext = this.nodeNext
       this.nodeNext.get.nodePrevious = nodeRight
       this.nodeNext = nodeRight
@@ -118,12 +108,12 @@ class Node(val value: Int) {
     }
   }
 
-  private def createNodeLeft(valueToAdd: Int) = {
+  private def createNodeLeft(valueToAdd: Int) : Unit= {
     nodeLeft = Some(new Node(valueToAdd))
-    nodeLeft.get.isLeft = true;
-    nodeLeft.get.nodeUp = Some(this);
+    nodeLeft.get.isLeft = true
+    nodeLeft.get.nodeUp = Some(this)
     nodeLeft.get.nodeNext = Some(this)
-    if (this.nodePrevious isDefined) {
+    if (this.nodePrevious.isDefined) {
       nodeLeft.get.nodePrevious = this.nodePrevious
       this.nodePrevious.get.nodeNext = nodeLeft
       this.nodePrevious = nodeLeft
@@ -136,7 +126,7 @@ class Node(val value: Int) {
     if (value.equals(valueToFind)) return true
     if (valueToFind < value && nodeLeft.isDefined) return nodeLeft.get.isPresent(value)
     if (valueToFind > value && nodeRight.isDefined) return nodeRight.get.isPresent(value)
-    return false
+    false
   }
 
 
@@ -154,24 +144,6 @@ class Node(val value: Int) {
     matrix
   }
 
-  def printByLine(godMod: Boolean): String = {
-    var result = ""
-    this.computeOffsets(0)
-    var matrix = dispatchByLine(0, mutable.MutableList())
-    for (lm <- matrix) {
-      var margeToSupress = 0
-      for (n <- lm) {
-        result += getSpaces(n.leftMarginBalanced - margeToSupress) + n.value
-        if (godMod) {
-          result += ": [" + n.leftMarginBalanced + "|" + n.leftOffset + "/" + n.rightOffset + "]"
-        }
-        margeToSupress = n.leftMarginBalanced + 1
-      }
-
-      result += "\n"
-    }
-    result
-  }
 
   def printByOrder(godMod: Boolean): String = {
     var result = ""
@@ -191,7 +163,7 @@ class Node(val value: Int) {
           margeToSupress +=1
         }
         var pipePosition = 0
-        if (n.nodeUp isDefined){
+        if (n.nodeUp.isDefined){
           if (n.isLeft){
             pipePosition = ((n.nodeUp.get.orderPosition - n.orderPosition) / 2) + n.orderPosition
             pipeLine += getSpaces(pipePosition - margePipeToSupress) + "/"
@@ -211,44 +183,6 @@ class Node(val value: Int) {
     result
   }
 
-
-
-  def computeSpaces(spacesInit:Spaces): Spaces ={
-    if(nodeLeft isEmpty){
-      spaces.l = spacesInit.l +1
-    }else{
-      nodeLeft.get.computeSpaces(Spaces(spacesInit.l+1,spacesInit.r+1))
-      spaces.l = nodeLeft.get.spaces.l + nodeLeft.get.spaces.r - spacesInit.l
-    }
-
-    if(nodeRight isEmpty){
-      spaces.r = spacesInit.r +1
-    }else{
-      nodeRight.get.computeSpaces(Spaces(spacesInit.l+1,spacesInit.r+1))
-      spaces.r = nodeRight.get.spaces.l + nodeRight.get.spaces.r - spacesInit.r
-    }
-    spaces
-  }
-
-  def printBySpaces(godMod: Boolean): String = {
-    var result = ""
-    this.computeSpaces(Spaces(0,0))
-    var matrix = dispatchByLine(0, mutable.MutableList())
-    for (lm <- matrix) {
-      for (n <- lm) {
-        result += getSpaces(n.spaces.l) + n.value + getSpaces(n.spaces.r)
-        if (godMod) {
-          result += ": [" + n.spaces.l + "/" + n.spaces.r + "]"
-        }
-      }
-      result += "\n"
-    }
-    result
-  }
-
-  def printByConcat(godMod: Boolean): String = {
-    ""
-  }
 
   private def getSpaces(spacesCount: Int): String = {
     var spacesToPrint = ""
